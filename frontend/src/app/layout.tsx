@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Header } from '@/components/Header';
+import ClientProviders from '@/components/Common/ClientProviders';
 import '@/globals.css';
 
 export const metadata: Metadata = {
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Header />
-        <main className="min-h-screen">{children}</main>
+        <ClientProviders>
+          <main className="min-h-screen">{children}</main>
+        </ClientProviders>
         <footer className="bg-dark text-white py-8 mt-16">
           <div className="container-custom">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

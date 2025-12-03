@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '@/utils/constants';
+import { toast } from 'react-toastify';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -32,15 +33,37 @@ class ApiService {
       return config;
     });
 
-    // Add response interceptor
+    // Add response interceptor that parses errors and shows user-friendly toasts
     this.api.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          window.location.href = '/auth/login';
+        const status = error.response?.status;
+        const serverMessage = error.response?.data?.message || error.response?.data?.error;
+        const msg = serverMessage || error.message || 'An unexpected error occurred';
+
+        if (typeof window !== 'undefined') {
+          // Show toast for client-side usage
+          try {
+            toast.error(msg);
+          } catch (e) {
+            // ignore toast issues
+          }
         }
-        return Promise.reject(error);
+
+        if (status === 401) {
+          try {
+            localStorage.removeItem('token');
+          } catch (e) {
+            // ignore
+          }
+          if (typeof window !== 'undefined') window.location.href = '/auth/login';
+        }
+
+        // Attach a normalized message for callers
+        const err = new Error(msg);
+        // @ts-ignore attach original
+        err.original = error;
+        return Promise.reject(err);
       }
     );
   }
