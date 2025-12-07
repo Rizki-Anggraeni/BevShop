@@ -34,12 +34,30 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const response = await authService.login(email, password);
-      setToken(response.data.token);
-      setUser(response.data.user);
+      // Handle response structure from apiService
+      const user = (response as any).user || (response as any).data?.user;
+      const token = (response as any).token || (response as any).data?.token;
+      
+      if (!user || !token) {
+        throw new Error('Invalid response structure from server');
+      }
+      
+      const userData = {
+        ...user,
+        id: user.id || user._id,
+      };
+      setToken(token);
+      setUser(userData);
       toast.success('Login successful!');
-      router.push('/');
+      // Redirect to admin if user is admin, else home
+      if (userData.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed');
+      const msg = error.message || error.response?.data?.message || 'Login failed';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

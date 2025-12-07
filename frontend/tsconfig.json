@@ -19,7 +19,7 @@
     "noEmit": true,
     "paths": {
       "@/*": [
-        "./src/*"
+        "./*"
       ]
     },
     "incremental": true,
